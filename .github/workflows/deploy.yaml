@@ -1,44 +1,30 @@
-name: Deploy Laravel to VPS
-
+name: Build and Deploy
 on:
     push:
         branches:
-            - main
+            - master
 
 jobs:
-    deploy:
+    build:
+        name: Build and Deploy
         runs-on: ubuntu-latest
-
         steps:
-            - name: Checkout Code
-              uses: actions/checkout@v2
-
-            - name: Install PHP 8.2 and Dependencies
-              run: |
-                  sudo add-apt-repository ppa:ondrej/php -y
-                  sudo apt-get update -y
-                  sudo apt-get install -y php8.2 php8.2-cli php8.2-fpm php8.2-xml php8.2-mbstring php8.2-json php8.2-zip composer git
-                  sudo update-alternatives --set php /usr/bin/php8.2
-                  sudo update-alternatives --set phpize /usr/bin/phpize8.2
-                  sudo update-alternatives --set php-fpm.sock /run/php/php8.2-fpm.sock
-
-            - name: Install Composer Dependencies
-              run: |
-                  composer install --no-dev --prefer-dist --optimize-autoloader
-                  php artisan config:cache
-                  php artisan route:cache
-                  php artisan view:cache
-
-            - name: Deploy Application via SSH
-              run: |
-                  ssh -o StrictHostKeyChecking=no root@your_vps_ip_address << 'EOF'
-                    cd /var/www/your_laravel_project
-                    git pull origin main
-                    composer install --no-dev --prefer-dist --optimize-autoloader
-                    php artisan migrate --force
-                    php artisan config:cache
-                    php artisan route:cache
-                    php artisan view:cache
-                    sudo systemctl restart php8.2-fpm
-                    sudo systemctl restart nginx
-                  EOF
+            - name: Checkout Repository
+              uses: actions/checkout@master
+            - name: Setup Enviroment
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.*"
+            - name: Speed up the packages installation process
+              run: composer global require hirak/prestissimo
+            - name: Install Packages
+              run: composer install --no-dev
+            - name: Deploy to Server
+              uses: ngocquyhoang/deploy@laravel
+              with:
+                  user: root
+                  host: 147.79.101.221
+                  port: 22
+                  path: /var/www/
+              env:
+                  DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
