@@ -24,6 +24,5 @@ jobs:
                   user: ${{ secrets.SERVER_USER }}
                   host: ${{ secrets.SERVER_HOST }}
                   path: ${{ secrets.SERVER_PATH }}
-                  owner: www
               env:
-                  DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+                  DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
