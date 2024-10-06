@@ -25,10 +25,11 @@ jobs:
                   user: ${{ secrets.SERVER_USER }}
                   host: ${{ secrets.SERVER_HOST }}
                   path: ${{ secrets.SERVER_PATH }}
+              env:
+                  DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            - name: SET CONFIG
               run: |
                   php artisan migrate --force
                   php artisan config:cache
                   php artisan route:cache
                   php artisan view:cache
-              env:
-                  DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
