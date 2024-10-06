@@ -1,30 +1,29 @@
-name: Build and Deploy
+name: Deploy to production
 on:
     push:
-        branches:
-            - main
+        branches: ["main"]
 
 jobs:
-    build:
-        name: Build and Deploy
+    deploy:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Repository
-              uses: actions/checkout@master
-            - name: Setup Enviroment
+              uses: actions/checkout@v2
+
+            - name: Set up PHP
               uses: shivammathur/setup-php@v2
               with:
                   php-version: "8.2"
-            - name: Speed up the packages installation process
-              run: composer global require hirak/prestissimo
-            - name: Install Packages
-              run: composer install --no-dev
-            - name: Deploy to Server
-              uses: ngocquyhoang/deploy@laravel
+
+            - name: Install Composer Dependencies
+              run: composer install --no-dev --prefer-dist --optimize-autoloader
+
+            - name: Deploy To production
+              uses: hypertech-lda/laravel-auto-deploy@1.1
               with:
-                  user: root
-                  host: 147.79.101.221
-                  port: 22
-                  path: /var/www/
+                  user: ${{ secrets.SERVER_USER }}
+                  host: ${{ secrets.SERVER_HOST }}
+                  path: ${{ secrets.SERVER_PATH }}
+                  owner: www
               env:
-                  DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
